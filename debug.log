@@ -1,0 +1,34 @@
+[2025-07-18 21:35:29] Export script started
+[2025-07-18 21:35:29] Session status: 2
+[2025-07-18 21:35:29] Session data missing, redirecting to index.php
+[2025-07-18 21:36:46] Export script started
+[2025-07-18 21:36:46] Session status: 2
+[2025-07-18 21:36:46] Session data found, proceeding with export
+[2025-07-18 21:36:46] Project name: TestProject
+[2025-07-18 21:36:46] Tables count: 1
+[2025-07-18 21:37:33] Export script started
+[2025-07-18 21:37:33] Session status: 2
+[2025-07-18 21:37:33] Session data missing, redirecting to index.php
+[2025-07-18 21:44:22] Simple Export script started
+[2025-07-18 21:44:22] Session status: 2
+[2025-07-18 21:44:22] Session data found, proceeding with export
+[2025-07-18 21:44:22] Project name: TestProject
+[2025-07-18 21:44:22] Tables count: 1
+[2025-07-18 21:44:38] Simple Export script started
+[2025-07-18 21:44:38] Session status: 2
+[2025-07-18 21:44:38] Session data found, proceeding with export
+[2025-07-18 21:44:38] Project name: TestProject
+[2025-07-18 21:44:38] Tables count: 1
+[2025-07-18 21:44:38] Executing PowerShell command: powershell -Command "Compress-Archive -Path 'C:\\xampp\\htdocs\\project 4\\generator/../temp/1752867878\*' -DestinationPath 'C:\\xampp\\htdocs\\project 4\\generator/../output/TestProject.zip' -Force"
+[2025-07-18 21:44:41] PowerShell command output: Array
+(
+)
+
+[2025-07-18 21:44:41] PowerShell command return code: 0
+[2025-07-18 21:44:41] ZIP file created successfully: C:\xampp\htdocs\project 4\generator/../output/TestProject.zip
+[2025-07-18 21:45:19] Export script started
+[2025-07-18 21:45:19] Session status: 2
+[2025-07-18 21:45:19] Session data missing, redirecting to index.php
+[2025-07-18 21:45:40] Export script started
+[2025-07-18 21:45:40] Session status: 2
+[2025-07-18 21:45:40] Session data missing, redirecting to index.php

@@ -48,45 +48,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'crud' => isset($_POST['feature_crud']),
                 'export_csv' => isset($_POST['feature_export']),
                 'search' => isset($_POST['feature_search']),
-                'soft_delete' => isset($_POST['feature_soft_delete'])
+                'pagination' => isset($_POST['feature_pagination']),
+                'api' => isset($_POST['feature_api'])
             ];
             header('Location: index.php?step=5');
             exit;
             
-        case 5: // Generate Project
-            // This will be handled by the generator scripts
-            // Redirect to the download page after generation
-            header('Location: generator/export.php');
+        case 5: // Output Options
+            $_SESSION['output'] = [
+                'download' => isset($_POST['output_download']),
+                'deploy' => isset($_POST['output_deploy']),
+                'github' => isset($_POST['output_github'])
+            ];
+            
+            // Set project name for file naming
+            $_SESSION['project_name'] = $_SESSION['project']['name'];
+            
+            // Redirect to export script
+            header('Location: generator/export_simple.php');
             exit;
     }
 }
 
 // Include header
-include 'templates/header.php';
+require_once 'templates/header.php';
 
-// Include the appropriate step template
-switch ($current_step) {
-    case 1:
-        include 'templates/pages/step1_project_setup.php';
-        break;
-    case 2:
-        include 'templates/pages/step2_define_tables.php';
-        break;
-    case 3:
-        include 'templates/pages/step3_auth_options.php';
-        break;
-    case 4:
-        include 'templates/pages/step4_select_features.php';
-        break;
-    case 5:
-        include 'templates/pages/step5_generate.php';
-        break;
-    default:
-        // Invalid step, redirect to step 1
-        header('Location: index.php?step=1');
-        exit;
+// Check if this is a download page request
+if (isset($_GET['page']) && $_GET['page'] === 'download') {
+    require_once 'templates/pages/download.php';
+} else {
+    // Include step template based on current step
+    switch ($current_step) {
+        case 1:
+            require_once 'templates/pages/step1_project_setup.php';
+            break;
+        case 2:
+            require_once 'templates/pages/step2_define_tables.php';
+            break;
+        case 3:
+            require_once 'templates/pages/step3_auth_options.php';
+            break;
+        case 4:
+            require_once 'templates/pages/step4_select_features.php';
+            break;
+        case 5:
+            require_once 'templates/pages/step5_generate.php';
+            break;
+        default:
+            require_once 'templates/pages/step1_project_setup.php';
+            break;
+    }
 }
 
 // Include footer
-include 'templates/footer.php';
-?>
+require_once 'templates/footer.php';

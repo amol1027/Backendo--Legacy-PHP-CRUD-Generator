@@ -4,16 +4,38 @@
  * Export Generator
  */
 
+// Enable error reporting
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+// Create a log file for debugging
+function log_debug($message) {
+    $log_file = __DIR__ . '/../debug.log';
+    $timestamp = date('Y-m-d H:i:s');
+    file_put_contents($log_file, "[$timestamp] $message\n", FILE_APPEND);
+}
+
+log_debug('Export script started');
+
 // Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+log_debug('Session status: ' . session_status());
+
 // Check if session data exists
 if (!isset($_SESSION['project_name']) || !isset($_SESSION['tables']) || empty($_SESSION['tables'])) {
+    log_debug('Session data missing, redirecting to index.php');
     header('Location: index.php');
     exit;
 }
+
+log_debug('Session data found, proceeding with export');
+log_debug('Project name: ' . $_SESSION['project_name']);
+log_debug('Tables count: ' . count($_SESSION['tables']));
+
 
 // Create temporary directory for project files
 $temp_dir = __DIR__ . '/../temp/' . time();
@@ -773,10 +795,83 @@ if (isset($_SESSION['features']['readme']) && $_SESSION['features']['readme']) {
 }
 
 // Create ZIP archive
+log_debug('Creating ZIP archive');
 $zip_file = __DIR__ . '/../output/' . $_SESSION['project_name'] . '_' . time() . '.zip';
-$zip = new ZipArchive();
+log_debug('ZIP file path: ' . $zip_file);
 
-if ($zip->open($zip_file, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
+// Make sure output directory exists
+if (!file_exists(__DIR__ . '/../output')) {
+    log_debug('Creating output directory');
+    $result = mkdir(__DIR__ . '/../output', 0777, true);
+    log_debug('Output directory creation result: ' . ($result ? 'success' : 'failed'));
+    
+    // Write to a direct error file for debugging
+    file_put_contents(__DIR__ . '/../export_error.log', date('Y-m-d H:i:s') . ' - Output directory creation result: ' . ($result ? 'success' : 'failed') . "\n", FILE_APPEND);
+}
+
+// Write session data to error log for debugging
+file_put_contents(__DIR__ . '/../export_error.log', date('Y-m-d H:i:s') . ' - Session data: ' . print_r($_SESSION, true) . "\n", FILE_APPEND);
+
+// Function to create a ZIP file without ZipArchive
+function create_zip_alternative($source, $destination) {
+    global $log_debug;
+    log_debug('Using alternative ZIP creation method');
+    
+    // Create empty file
+    $f = fopen($destination, 'w');
+    fclose($f);
+    
+    // Get real path for source directory
+    $source = realpath($source);
+    log_debug('Source directory: ' . $source);
+    
+    try {
+        // Initialize archive object
+        log_debug('Initializing PharData');
+        $zip = new PharData($destination);
+        
+        // Create recursive directory iterator
+        $files = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($source),
+            RecursiveIteratorIterator::LEAVES_ONLY
+        );
+        
+        $file_count = 0;
+        foreach ($files as $name => $file) {
+            // Skip directories (they would be added automatically)
+            if (!$file->isDir()) {
+                // Get real and relative path for current file
+                $file_path = $file->getRealPath();
+                $relative_path = substr($file_path, strlen($source) + 1);
+                
+                // Add current file to archive
+                $zip->addFile($file_path, $relative_path);
+                $file_count++;
+            }
+        }
+        
+        log_debug('Added ' . $file_count . ' files to archive');
+        return true;
+    } catch (Exception $e) {
+        log_debug('Error creating ZIP with PharData: ' . $e->getMessage());
+        return false;
+    }
+}
+
+// Check if ZipArchive is available
+log_debug('Checking if ZipArchive is available: ' . (class_exists('ZipArchive') ? 'Yes' : 'No'));
+file_put_contents(__DIR__ . '/../export_error.log', date('Y-m-d H:i:s') . ' - ZipArchive available: ' . (class_exists('ZipArchive') ? 'Yes' : 'No') . "\n", FILE_APPEND);
+
+if (class_exists('ZipArchive')) {
+    log_debug('Using ZipArchive');
+    file_put_contents(__DIR__ . '/../export_error.log', date('Y-m-d H:i:s') . ' - Using ZipArchive' . "\n", FILE_APPEND);
+    
+    $zip = new ZipArchive();
+    $result = $zip->open($zip_file, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+    log_debug('ZipArchive open result: ' . $result);
+    file_put_contents(__DIR__ . '/../export_error.log', date('Y-m-d H:i:s') . ' - ZipArchive open result: ' . $result . "\n", FILE_APPEND);
+    
+    if ($result === TRUE) {
     // Add files recursively
     $files = new RecursiveIteratorIterator(
         new RecursiveDirectoryIterator($temp_dir),
@@ -791,38 +886,90 @@ if ($zip->open($zip_file, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) 
         }
     }
     
-    $zip->close();
-    
-    // Clean up temporary directory
-    function deleteDir($dir) {
-        if (!file_exists($dir)) {
-            return true;
-        }
+        $zip->close();
         
-        if (!is_dir($dir)) {
-            return unlink($dir);
-        }
-        
-        foreach (scandir($dir) as $item) {
-            if ($item == '.' || $item == '..') {
-                continue;
+        // Clean up temporary directory
+        function deleteDir($dir) {
+            if (!file_exists($dir)) {
+                return true;
             }
             
-            if (!deleteDir($dir . DIRECTORY_SEPARATOR . $item)) {
-                return false;
+            if (!is_dir($dir)) {
+                return unlink($dir);
             }
+            
+            foreach (scandir($dir) as $item) {
+                if ($item == '.' || $item == '..') {
+                    continue;
+                }
+                
+                if (!deleteDir($dir . DIRECTORY_SEPARATOR . $item)) {
+                    return false;
+                }
+            }
+            
+            return rmdir($dir);
         }
         
-        return rmdir($dir);
+        deleteDir($temp_dir);
+        
+        // Redirect to download page
+        header('Location: ../index.php?page=download&file=' . basename($zip_file));
+        exit;
+    } else {
+        echo "Failed to create ZIP archive.";
+        exit;
     }
-    
-    deleteDir($temp_dir);
-    
-    // Redirect to download page
-    header('Location: ../index.php?page=download&file=' . basename($zip_file));
-    exit;
 } else {
-    echo "Failed to create ZIP archive.";
+    // Use alternative method with PharData if available
+    log_debug('ZipArchive not available, checking for PharData');
+    file_put_contents(__DIR__ . '/../export_error.log', date('Y-m-d H:i:s') . ' - ZipArchive not available, checking for PharData' . "\n", FILE_APPEND);
+    
+    $phardata_available = class_exists('PharData');
+    log_debug('PharData available: ' . ($phardata_available ? 'Yes' : 'No'));
+    file_put_contents(__DIR__ . '/../export_error.log', date('Y-m-d H:i:s') . ' - PharData available: ' . ($phardata_available ? 'Yes' : 'No') . "\n", FILE_APPEND);
+    
+    if (class_exists('PharData')) {
+        try {
+            log_debug('Attempting to create ZIP with PharData');
+            file_put_contents(__DIR__ . '/../export_error.log', date('Y-m-d H:i:s') . ' - Attempting to create ZIP with PharData' . "\n", FILE_APPEND);
+            
+            if (create_zip_alternative($temp_dir, $zip_file)) {
+                log_debug('ZIP creation with PharData successful');
+                file_put_contents(__DIR__ . '/../export_error.log', date('Y-m-d H:i:s') . ' - ZIP creation with PharData successful' . "\n", FILE_APPEND);
+                
+                // Clean up temporary directory
+                log_debug('Cleaning up temporary directory');
+                deleteDir($temp_dir);
+                
+                // Redirect to download page
+                log_debug('Redirecting to download page with file: ' . basename($zip_file));
+                file_put_contents(__DIR__ . '/../export_error.log', date('Y-m-d H:i:s') . ' - Redirecting to download page with file: ' . basename($zip_file) . "\n", FILE_APPEND);
+                
+                header('Location: ../index.php?page=download&file=' . basename($zip_file));
+                exit;
+            } else {
+                log_debug('Failed to create ZIP archive using PharData');
+                file_put_contents(__DIR__ . '/../export_error.log', date('Y-m-d H:i:s') . ' - Failed to create ZIP archive using PharData' . "\n", FILE_APPEND);
+                
+                echo "Failed to create ZIP archive using alternative method.";
+                exit;
+            }
+        } catch (Exception $e) {
+            log_debug('Error creating ZIP archive: ' . $e->getMessage());
+            file_put_contents(__DIR__ . '/../export_error.log', date('Y-m-d H:i:s') . ' - Error creating ZIP archive: ' . $e->getMessage() . "\n", FILE_APPEND);
+            
+            echo "Error creating ZIP archive: " . $e->getMessage();
+            exit;
+        }
+    } else {
+        // If neither ZipArchive nor PharData is available
+        log_debug('Neither ZipArchive nor PharData is available');
+        file_put_contents(__DIR__ . '/../export_error.log', date('Y-m-d H:i:s') . ' - Neither ZipArchive nor PharData is available' . "\n", FILE_APPEND);
+        
+        echo "ZIP functionality is not available on this server. Please install the ZIP extension.";
+        exit;
+    }
 }
 
 /**
