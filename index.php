@@ -73,9 +73,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Include header
 require_once 'templates/header.php';
 
-// Check if this is a download page request
+// Check if this is a download page request or generate action
 if (isset($_GET['page']) && $_GET['page'] === 'download') {
     require_once 'templates/pages/download.php';
+} elseif (isset($_GET['action']) && $_GET['action'] === 'generate') {
+    // Process output options if provided
+    if (isset($_POST['output_options'])) {
+        $_SESSION['output_options'] = json_decode($_POST['output_options'], true);
+    }
+    
+    // Redirect to export script
+    header('Location: generator/export_simple.php');
+    exit;
 } else {
     // Include step template based on current step
     switch ($current_step) {

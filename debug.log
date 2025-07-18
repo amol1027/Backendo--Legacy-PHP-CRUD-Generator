@@ -32,3 +32,15 @@
 [2025-07-18 21:45:40] Export script started
 [2025-07-18 21:45:40] Session status: 2
 [2025-07-18 21:45:40] Session data missing, redirecting to index.php
+[2025-07-18 22:02:31] Simple Export script started
+[2025-07-18 22:02:31] Session status: 2
+[2025-07-18 22:02:31] Session data found, proceeding with export
+[2025-07-18 22:02:31] Project name: amol
+[2025-07-18 22:02:31] Tables count: 1
+[2025-07-18 22:02:31] Executing PowerShell command: powershell -Command "Compress-Archive -Path 'C:\\xampp\\htdocs\\project 4\\generator/../temp/1752868951\*' -DestinationPath 'C:\\xampp\\htdocs\\project 4\\generator/../output/amol.zip' -Force"
+[2025-07-18 22:02:33] PowerShell command output: Array
+(
+)
+
+[2025-07-18 22:02:33] PowerShell command return code: 0
+[2025-07-18 22:02:33] ZIP file created successfully: C:\xampp\htdocs\project 4\generator/../output/amol.zip

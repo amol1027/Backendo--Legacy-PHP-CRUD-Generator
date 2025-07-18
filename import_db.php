@@ -17,8 +17,10 @@ echo "<style>\n";
 echo "body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }\n";
 echo ".success { color: green; padding: 10px; background-color: #f0fff0; border: 1px solid #d0e9c6; margin: 20px 0; }\n";
 echo ".error { color: #a94442; padding: 10px; background-color: #f2dede; border: 1px solid #ebccd1; margin: 20px 0; }\n";
+echo ".info { background-color: #d1ecf1; color: #0c5460; padding: 10px; border: 1px solid #bee5eb; margin: 20px 0; }\n";
 echo "h2 { color: #333; }\n";
 echo "pre { background: #f4f4f4; padding: 10px; overflow: auto; }\n";
+echo "ol li { margin-bottom: 8px; }\n";
 echo "</style>\n";
 echo "</head>\n<body>\n";
 
@@ -95,8 +97,14 @@ try {
         echo "<li>Go to <a href='welcome.php'>welcome page</a> to start using the PHP CRUD Generator</li>";
         echo "<li>Create your first project</li>";
         echo "<li>Define your database tables</li>";
+        echo "<li>Choose whether to include authentication (login/registration) in your generated application</li>";
+        echo "<li>Select features for your application</li>";
         echo "<li>Generate your PHP application</li>";
         echo "</ol>";
+        
+        echo "<div class='info'>";
+        echo "<p><strong>Note:</strong> Login and registration are optional features that you can choose to include in your generated application. The database schema includes a users table that will be used if you enable authentication.</p>";
+        echo "</div>";
     }
 } catch (PDOException $e) {
     echo "<div class='error'>";

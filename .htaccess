@@ -4,8 +4,8 @@ DirectoryIndex welcome.php
 # Enable URL rewriting
 RewriteEngine On
 
-# Redirect direct access to export.php to the main application
-RewriteRule ^generator/export\.php$ index.php [L,R=302]
+# Allow access to export_simple.php
+# RewriteRule ^generator/export\.php$ index.php [L,R=302]
 
 # Protect sensitive directories
 <FilesMatch "\.(htaccess|htpasswd|ini|log|sh|inc|bak)$">

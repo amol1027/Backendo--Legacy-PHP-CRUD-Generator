@@ -72,7 +72,7 @@
                     </div>
                 </div>
                 
-                <form action="generator/export.php" method="post" id="generate-form">
+                <form action="index.php?step=5&action=generate" method="post" id="generate-form">
                     <input type="hidden" name="output_options" id="output-options" value="">
                     
                     <div class="d-flex justify-content-between mt-4">
